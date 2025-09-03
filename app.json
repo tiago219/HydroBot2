@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "5f2e075a-4034-468f-80b4-cdf2313ddff7"
+      }
+    },
+    "android": {
+      "package": "com.tiago219.hydrobot2"
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "expo": "^53.0.22",
+    "react-native-bluetooth-serial-next": "^1.2.3",
+    "expo-dev-client": "~5.2.4"
+  }
+}
