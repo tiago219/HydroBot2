@@ -1043,3 +1043,19 @@ Você está com Java 24 — o Gradle deve aceitar, mas se der erro de compatibil
 
 👉 Quer que eu já te mande o link direto para o JDK 17 portátil (zip) para evitar qualquer risco de incompatibilidade?
 
+
+
+
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+BUG! exception in phase 'semantic analysis' in source unit '_BuildScript_' Unsupported class file major version 68
+> Unsupported class file major version 68
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
