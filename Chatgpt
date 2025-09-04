@@ -273,3 +273,325 @@ const styles = StyleSheet.create({
 
 Quer que eu te gere também os comandos passo-a-passo desde npx create-expo-app até rodar o app no celular?
 
+
+
+
+
+
+
+Perfeito. Vamos fazer uma Dev Build do seu app Expo (Android) e, de brinde, uma Preview Build offline para quando o celular estiver conectado ao AP do ESP32 (sem internet).
+
+
+
+✅ O que você vai ganhar
+
+
+
+
+Dev Build (com expo-dev-client): ideal para desenvolver, abrir pelo QR/Deep Link e usar Fast Refresh. (Requer o celular e o PC na mesma rede com internet durante o desenvolvimento.)
+
+
+Preview Build (APK offline): roda sem Metro/sem internet — perfeito para usar conectado ao HYDROBOT-CAM.
+
+
+
+
+
+
+Dica: durante os testes com o ESP32 (sem internet), use Preview APK.
+
+Nas iterações de código, use a Dev Build no seu Wi-Fi normal.
+
+
+
+
+
+0) Pré-requisitos
+
+
+No projeto hydrobot-app:
+
+
+npm i -g eas-cli
+eas whoami    # (faça login, se pedir)
+
+
+
+
+1) Ajustes no app (cleartext + dev client)
+
+
+Abra seu app.json e garanta isto:
+
+
+{
+  "expo": {
+    "name": "HydroBot",
+    "slug": "hydrobot-app",
+    "scheme": "hydrobot",
+    "sdkVersion": "51.0.0",
+    "plugins": ["expo-dev-client"],
+    "android": {
+      "usesCleartextTraffic": true,      // permite HTTP para 192.168.4.1
+      "permissions": ["INTERNET"]        // por via das dúvidas (Expo já inclui)
+    }
+  }
+}
+
+
+
+Instale o dev client:
+
+
+npm i expo-dev-client
+
+
+
+
+2) Configurar perfis de build (eas.json)
+
+
+Crie (ou edite) eas.json na raiz do projeto:
+
+
+{
+  "cli": { "version": ">= 3.17.0" },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "preview": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "android": { "buildType": "apk" }
+    },
+    "production": {
+      "developmentClient": false,
+      "distribution": "store"
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
+
+
+
+
+
+development → Dev Client (APK)
+
+
+preview → APK offline, com bundle embutido (ideal para AP do ESP)
+
+
+
+
+
+3) Fazer a Dev Build (APK)
+
+
+eas build --profile development --platform android
+
+
+
+Quando terminar, baixe o .apk que o EAS te fornecer.
+
+
+Instale no Android (com USB e ADB):
+
+
+adb install -r path/para/o/app-development.apk
+
+
+
+Abrir a Dev Build:
+
+
+
+
+Conecte PC e celular no seu Wi-Fi normal (com internet).
+
+
+No projeto:
+
+npx expo start --dev-client
+
+
+
+
+
+No celular, abra o app “HydroBot (Dev)”. Ele vai pedir para abrir o projeto via link/QR do Metro.
+
+
+Pronto: Fast Refresh e tudo funcionando.
+
+
+
+
+
+
+Se aparecer tela branca ou não achar o bundler: verifique que o celular está na mesma rede do PC e que o firewall do Windows não bloqueou a porta do Metro.
+
+
+
+
+
+4) Fazer a Preview Build (APK offline)
+
+
+eas build --profile preview --platform android
+
+
+
+Instale:
+
+
+adb install -r path/para/o/app-preview.apk
+
+
+
+Agora você pode:
+
+
+
+
+Sair do seu Wi-Fi
+
+
+Conectar o celular ao AP do ESP32 (HYDROBOT-CAM)
+
+
+Abrir o app Preview (não é o Dev).
+
+
+Ele vai carregar o bundle embutido e acessar http://192.168.4.1 (conforme seu src/config.js).
+
+
+
+
+
+5) Checagens importantes
+
+
+
+
+
+
+react-native-webview instalado:
+
+
+npx expo install react-native-webview
+
+
+
+Import no App.tsx:
+
+
+import { WebView } from "react-native-webview";
+
+
+
+
+
+
+
+Endereço do ESP:
+src/config.js
+
+
+export const BASE_URL = "http://192.168.4.1";
+
+
+
+(Se você trocar o IP do AP, ajuste aqui.)
+
+
+
+
+
+
+Sem internet no AP do ESP
+
+– Dev Build não vai conseguir baixar bundle se o celular estiver no AP do ESP. Use a Preview APK para esse cenário.
+
+
+
+
+
+
+Cleartext HTTP (Android 9+)
+
+Já habilitamos "usesCleartextTraffic": true. Sem isso, fetch/WebView para http://192.168.4.1 pode ser bloqueado.
+
+
+
+
+
+
+
+6) Plano B (sem EAS): build local “release” com Gradle
+
+
+Se você quiser tudo local (precisa Android Studio/SDK):
+
+
+# gera nativo
+npx expo prebuild
+
+# abre android/ via Android Studio (ou use Gradle direto)
+cd android
+./gradlew assembleRelease
+
+
+
+O APK sai em android/app/build/outputs/apk/release/app-release.apk.
+
+Instale com adb install -r .... Isso também embute o bundle e roda offline.
+
+
+
+7) Atalhos úteis
+
+
+
+
+Limpar cache:
+
+expo start -c
+
+
+
+
+
+Verificar registries:
+
+npm config get registry
+npm config set registry https://registry.npmjs.org/
+
+
+
+
+
+Se o WebView não renderiza:
+
+
+
+Confirme react-native-webview instalado.
+
+
+Teste a URL do stream no Chrome do celular: http://192.168.4.1:81/stream.
+
+
+
+
+
+
+
+
+
+Se quiser, eu já te deixo aqui um eas.json + app.json exatos com as chaves atuais do seu projeto (copiar/colar). E, se aparecer algum erro de EAS (credenciais Android, Keystore, etc.), me manda a mensagem que eu ajusto o fluxo.
+
+
