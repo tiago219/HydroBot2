@@ -1698,3 +1698,232 @@ Se preferir a Opção B (keystore própria), eu te mando os 3 arquivos (build.gr
 
 
 ConfigError: Cannot resolve entry file: The `main` field defined in your `package.json` points to an unresolvable or non-existent path.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Isso aí é erro de entry point do Expo. O package.json está com "main": "expo-router/entry" (ou algo parecido) mas seu projeto não usa expo-router — você tem um App.tsx na raiz. Resultado: o Metro não acha o arquivo de entrada e o QR não abre.
+
+
+Tem duas formas válidas. Escolha UMA e siga até o fim:
+
+
+
+✅ Opção 1 — Projeto “clássico” (recomendada no seu caso)
+
+
+1) package.json correto (cole inteiro):
+
+
+{
+  "name": "hydrobot-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "^51.0.0",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-webview": "^13.8.6"
+  }
+}
+
+
+
+2) Estrutura de arquivos (sem pasta app/):
+
+
+hydrobot-app/
+├─ app.json
+├─ package.json          ← (agora com main = node_modules/expo/AppEntry.js)
+├─ App.tsx               ← seu arquivo principal
+└─ src/
+   └─ config.js
+
+
+
+3) Garanta que você NÃO tem app/ na raiz.
+
+Se existir, renomeie ou apague (isso ativa o modo expo-router automaticamente).
+
+
+4) Reinstale e limpe cache:
+
+
+npm install
+npx expo install react-native-webview
+npx expo start -c
+
+
+
+Pronto: o QR do Expo Go deve abrir normal. (Depois, dentro do app você conecta ao Wi-Fi do ESP32-CAM para usar a câmera/HTTP.)
+
+
+
+✅ Opção 2 — Projeto com expo-router (só se você quiser usar router)
+
+
+Use essa opção APENAS se quiser pastas/rotas.
+
+
+1) package.json:
+
+
+{
+  "name": "hydrobot-app",
+  "version": "1.0.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "^51.0.0",
+    "expo-router": "^3.5.16",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-webview": "^13.8.6"
+  }
+}
+
+
+
+2) Estrutura de arquivos (com pasta app/):
+
+
+hydrobot-app/
+├─ app.json
+├─ package.json            ← main = expo-router/entry
+├─ app/
+│  ├─ _layout.tsx
+│  └─ index.tsx            ← coloque aqui o conteúdo do seu App.tsx
+└─ src/
+   └─ config.js
+
+
+
+3) Arquivos mínimos do router:
+
+
+app/_layout.tsx
+
+
+import { Stack } from "expo-router";
+export default function Layout() {
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
+
+
+
+app/index.tsx
+
+(cole aqui o conteúdo do seu App.tsx atual)
+
+
+4) Instale/limpe:
+
+
+npm install
+npx expo install expo-router react-native-webview
+npx expo start -c
+
+
+
+
+Testes rápidos
+
+
+
+
+
+
+O Node encontra o entry?
+
+
+node -e "console.log(require.resolve('expo/AppEntry'))"
+
+
+
+(para a Opção 1)
+
+
+node -e "console.log(require.resolve('expo-router/entry'))"
+
+
+
+(para a Opção 2)
+
+
+
+
+
+
+Se o QR não abrir no celular:
+
+
+
+
+PC e celular na mesma rede Wi-Fi.
+
+
+Desative firewall do Windows para Rede Privada ou permita node.exe.
+
+
+No Expo Dev Tools, alterne o Connection para Tunnel.
+
+
+Em Android, abra o Expo Go → “Projects” → cole o link manualmente (ex.: exp://...).
+
+
+
+
+
+
+
+
+
+Lembretes pro seu app
+
+
+
+
+
+
+Você vai abrir o QR no Wi-Fi normal com internet.
+
+Depois, dentro do app, ao clicar nos botões/câmera, você se conecta ao AP do ESP32-CAM para acessar http://192.168.4.1.
+
+
+
+
+
+
+Para build APK offline você já tem o caminho com Gradle; isso é independente do QR/Metro.
+
+
+
+
+
+
+Se quiser, me manda o seu package.json atual e um tree da pasta do projeto que eu ajusto exatamente o que precisa mudar.
+
