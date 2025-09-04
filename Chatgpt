@@ -1442,3 +1442,36 @@ adb install -r android\app\build\outputs\apk\release\app-release.apk
 Se preferir, me diga qual opção vai usar (A ou B) e eu ajusto o applicationId/namespace para o valor que você quiser (ex.: com.seu.nome.hydrobot).
 
 
+
+
+
+
+
+
+
+
+
+
+PS K:\Users\20231350250\Documents\mibr2025\hydrobot-app\android> .\gradlew assembleRelease
+
+> Configure project :app
+ ??  Applying gradle plugin 'expo-dev-launcher-gradle-plugin' (expo-dev-launcher@5.1.16)
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file 'K:\Users\20231350250\Documents\mibr2025\hydrobot-app\android\app\build.gradle' line: 12
+
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> Could not read script 'K:\Users\20231350250\Documents\mibr2025\hydrobot-app\android\app\packages\@expo\config-plugins\scripts\autolink.gradle' as it 
+does not exist.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 4s
+15 actionable tasks: 3 executed, 12 up-to-date
