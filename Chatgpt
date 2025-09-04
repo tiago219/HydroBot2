@@ -601,3 +601,10 @@ Se quiser, eu já te deixo aqui um eas.json + app.json exatos com as chaves atua
 ✖ Generating keystore in the cloud...
 Request failed: 500 (Internal Server Error)
     Error: build command failed.
+
+
+
+ERROR: JAVA_HOME is set to an invalid directory: C:\Program Files\Java 
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation.
