@@ -608,3 +608,135 @@ ERROR: JAVA_HOME is set to an invalid directory: C:\Program Files\Java
 
 Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation.
+
+
+
+
+Esse erro é clássico ⚡ — o Gradle não achou o Java porque a variável JAVA_HOME está apontando para uma pasta inválida. Bora resolver no Windows passo a passo:
+
+
+
+🔹 1. Descobrir onde está instalado o Java (JDK)
+
+
+No PowerShell:
+
+
+where java
+
+
+
+Ele deve mostrar algo tipo:
+
+
+C:\Program Files\Eclipse Adoptium\jdk-17.0.9.101-hotspot\bin\java.exe
+
+
+
+A pasta que interessa é a que contém bin (sem o \bin).
+
+
+Exemplo correto de JAVA_HOME:
+
+
+C:\Program Files\Eclipse Adoptium\jdk-17.0.9.101-hotspot
+
+
+
+
+🔹 2. Configurar a variável de ambiente
+
+
+Temporário (só para essa janela PowerShell)
+
+
+setx JAVA_HOME "C:\Program Files\Eclipse Adoptium\jdk-17.0.9.101-hotspot"
+$env:JAVA_HOME="C:\Program Files\Eclipse Adoptium\jdk-17.0.9.101-hotspot"
+
+
+
+(Substitua pelo caminho real que você achou no passo 1.)
+
+
+Permanente (Windows inteiro)
+
+
+
+
+Abra o menu iniciar → Editar variáveis de ambiente do sistema.
+
+
+Clique em Variáveis de ambiente.
+
+
+Em Variáveis do sistema, clique em Novo (ou edite JAVA_HOME se já existir).
+
+
+
+Nome: JAVA_HOME
+
+
+Valor: C:\Program Files\Eclipse Adoptium\jdk-17.0.x.x-hotspot (sem \bin)
+
+
+
+
+
+
+Edite a variável Path → adicione:
+
+%JAVA_HOME%\bin
+
+
+
+
+
+Salve e reinicie o terminal.
+
+
+
+
+
+🔹 3. Testar se deu certo
+
+
+No PowerShell:
+
+
+echo $env:JAVA_HOME
+java -version
+
+
+
+Deve mostrar o caminho correto e a versão do Java.
+
+
+
+🔹 4. Gerar o APK novamente
+
+
+Agora volte à pasta do projeto e rode:
+
+
+cd android
+.\gradlew assembleRelease
+
+
+
+O APK final estará em:
+
+
+android\app\build\outputs\apk\release\app-release.apk
+
+
+
+
+📌 Observação importante: o Expo SDK 51 usa o Android Gradle Plugin 8, que requer Java 17.
+
+Então instale o JDK 17 (Adoptium ou Oracle) se você ainda estiver com JDK 8 ou 11.
+
+
+
+Quer que eu te mande o link direto para baixar e instalar o JDK 17 certo (sem risco de pegar versão errada)?
+
+
