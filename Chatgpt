@@ -1475,3 +1475,209 @@ does not exist.
 
 BUILD FAILED in 4s
 15 actionable tasks: 3 executed, 12 up-to-date
+
+
+
+
+
+
+
+
+
+
+
+
+Boa, o erro veio daquele apply from ... autolink.gradle apontando pro lugar errado (dentro de android/app/packages/...). Vamos arrumar com uma resolução à prova de caminho usando require.resolve(...) do Node.
+
+
+Abaixo estão os arquivos completos para a Opção A (release assinado com debug), já corrigidos. Cole exatamente assim.
+
+
+
+android/app/build.gradle (COMPLETO – corrigido)
+
+
+apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
+apply plugin: "org.jetbrains.kotlin.android"
+
+import com.android.build.OutputFile
+
+// ---------- Expo autolink (caminho robusto) ----------
+def expoAutolinkGradlePath = ["node", "--print", "require.resolve('@expo/config-plugins/scripts/autolink.gradle')"]
+        .execute(null, rootDir)
+        .text
+        .trim()
+apply from: new File(expoAutolinkGradlePath), to: project
+// -----------------------------------------------------
+
+def enableProguardInReleaseBuilds = false
+def enableSeparateBuildPerCPUArchitecture = false
+
+android {
+  namespace "com.yagohmz.hydrobot"     // ajuste se quiser
+  compileSdkVersion rootProject.ext.get("compileSdkVersion")
+
+  defaultConfig {
+    applicationId "com.yagohmz.hydrobot"   // ajuste se quiser
+    minSdkVersion rootProject.ext.get("minSdkVersion")
+    targetSdkVersion rootProject.ext.get("targetSdkVersion")
+    versionCode 1
+    versionName "1.0"
+    manifestPlaceholders = [ expoDebuggable: false ]
+  }
+
+  signingConfigs {
+    debug {
+      // padrão do Android Studio
+    }
+  }
+
+  buildTypes {
+    debug {
+      signingConfig signingConfigs.debug
+    }
+    release {
+      // 🔑 Forçar assinatura debug no release (evita erro path='')
+      signingConfig signingConfigs.debug
+
+      minifyEnabled enableProguardInReleaseBuilds
+      shrinkResources false
+      proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+    }
+  }
+
+  packagingOptions {
+    resources { excludes += ["META-INF/**"] }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+dependencies {
+  implementation fileTree(dir: "libs", include: ["*.jar"])
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+// ---------- React Native Gradle Plugin (caminho robusto) ----------
+def rnGradlePlugin = new File(
+  ["node", "--print", "require.resolve('react-native-gradle-plugin/package.json')"]
+    .execute(null, rootDir)
+    .text
+    .trim()
+).toPath().resolveSibling("react-native-gradle-plugin.js").toFile()
+apply from: rnGradlePlugin
+// ---------------------------------------------------------------
+
+
+
+
+
+Observações:
+
+
+
+
+Removi o apply from ... packages/@expo/... que apontava para dentro de android/app.
+
+
+Agora a resolução usa require.resolve(...), que acha o script dentro de node_modules automaticamente.
+
+
+Mantive a assinatura debug para release (Opção A).
+
+
+
+
+
+
+
+android/gradle.properties (garanta estas linhas)
+
+
+org.gradle.jvmargs=-Xmx3g -Dkotlin.daemon.jvm.options=-Xmx2g
+android.useAndroidX=true
+
+# Use seu JDK 17 portátil
+org.gradle.java.home=K:\\Users\\20231350250\\Documents\\mibr2025\\jdk-17.0.11
+
+
+
+
+
+Dica: se existir android/app/key.properties, apague (na Opção A não usamos keystore própria).
+
+
+
+
+
+Comandos (PowerShell)
+
+
+
+
+Execute na raiz do projeto, com seu JDK 17 exportado na sessão:
+
+
+
+
+# 1) Usar o JDK portátil na sessão
+$env:JAVA_HOME = "K:\Users\20231350250\Documents\mibr2025\jdk-17.0.11"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+java -version
+
+# 2) (Re)gerar nativo, caso tenha mudado algo de config
+npx expo prebuild
+
+# 3) Build
+cd android
+.\gradlew clean
+.\gradlew assembleRelease -Dorg.gradle.java.home="$env:JAVA_HOME" -Dorg.gradle.jvmargs="-Xmx3g"
+
+
+
+APK final:
+
+
+android\app\build\outputs\apk\release\app-release.apk
+
+
+
+Instalar no Android:
+
+
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+
+
+
+
+Se ainda der erro de caminho:
+
+
+
+
+Rode este teste rápido para ver se o Node encontra os scripts:
+
+
+
+
+node -e "console.log(require.resolve('@expo/config-plugins/scripts/autolink.gradle'))"
+node -e "console.log(require.resolve('react-native-gradle-plugin/package.json'))"
+
+
+
+Eles devem imprimir caminhos completos dentro de node_modules.
+
+Se algum falhar, rode npm install na raiz do projeto.
+
+
+
+Se preferir a Opção B (keystore própria), eu te mando os 3 arquivos (build.gradle com fallback, key.properties e o comando do keytool) já prontos com o seu caminho.
+
