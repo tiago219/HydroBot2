@@ -1681,3 +1681,20 @@ Se algum falhar, rode npm install na raiz do projeto.
 
 Se preferir a Opção B (keystore própria), eu te mando os 3 arquivos (build.gradle com fallback, key.properties e o comando do keytool) já prontos com o seu caminho.
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ConfigError: Cannot resolve entry file: The `main` field defined in your `package.json` points to an unresolvable or non-existent path.
