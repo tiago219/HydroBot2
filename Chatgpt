@@ -2011,3 +2011,124 @@ PluginError: Failed to resolve plugin for module "expo-dev-client" relative to "
     at withConfigPlugins (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\plugins\withConfigPlugins.js:35:47)
     at fillAndReturnConfig (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\Config.js:229:78)
     at getConfig (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\Config.js:286:10)
+
+
+
+
+
+
+
+
+
+Show 👍 vamos deixar redondinho.
+
+
+
+📂 Estrutura sugerida do projeto
+
+
+hydrobot-app/
+├─ app/
+│  └─ index.tsx        ← tela principal (Expo Router)
+├─ src/
+│  └─ config.js        ← centraliza endereço do ESP32
+├─ app.json
+├─ package.json
+
+
+
+
+📄 src/config.js
+
+
+// Configurações do HydroBot
+export const BASE_URL = "http://192.168.4.1"; // IP padrão do ESP32-CAM em modo AP
+
+
+
+
+📄 app/index.tsx
+
+
+import React, { useState, useEffect } from "react";
+import { View, Text, Button, StyleSheet } from "react-native";
+import { WebView } from "react-native-webview";
+import { BASE_URL } from "../src/config";  // caminho relativo correto
+
+export default function Index() {
+  const [status, setStatus] = useState<any>(null);
+
+  async function fetchStatus() {
+    try {
+      const res = await fetch(`${BASE_URL}/status`);
+      const data = await res.json();
+      setStatus(data);
+    } catch (e) {
+      console.error("Erro ao buscar status:", e);
+    }
+  }
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>🤖 HydroBot App</Text>
+
+      <Button title="Atualizar Status" onPress={fetchStatus} />
+
+      {status && (
+        <Text style={styles.status}>
+          LED: {status.led ? "Ligado" : "Desligado"} | 
+          Bomba: {status.pump ? "Ligada" : "Desligada"} | 
+          Modo: {status.mode}
+        </Text>
+      )}
+
+      <View style={styles.webviewBox}>
+        <WebView source={{ uri: `${BASE_URL}:81/stream` }} />
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, justifyContent: "center", alignItems: "center", padding: 16 },
+  title: { fontSize: 22, fontWeight: "bold", marginBottom: 16 },
+  status: { marginVertical: 12, fontSize: 16 },
+  webviewBox: { width: "100%", height: 240, marginTop: 16 },
+});
+
+
+
+
+📌 Próximos passos
+
+
+
+
+Criar o arquivo src/config.js conforme acima.
+
+
+Trocar o import no index.tsx para:
+
+import { BASE_URL } from "../src/config";
+
+
+
+
+
+Instalar o WebView e o expo-image se ainda não fez:
+
+npx expo install react-native-webview expo-image
+
+
+
+
+
+
+
+
+👉 Quer que eu adicione também os botões para ligar/desligar LED e bomba no index.tsx, direto chamando /led e /pump?
+
