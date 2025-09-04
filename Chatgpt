@@ -1059,3 +1059,26 @@ BUG! exception in phase 'semantic analysis' in source unit '_BuildScript_' Unsup
 > Run with --info or --debug option to get more log output.
 > Run with --scan to get full insights.
 > Get more help at https://help.gradle.org.
+
+
+
+
+
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file 'K:\Users\20231350250\Documents\mibr2025\hydrobot-app\android\app\build.gradle' line: 33
+
+* What went wrong:
+A problem occurred evaluating project ':app'.
+> path may not be null or empty string. path=''
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 3m 50s
+15 actionable tasks: 15 executed
+PS K:\Users\20231350250\Documents\mibr2025\hydrobot-app\android>
