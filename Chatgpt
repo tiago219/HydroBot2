@@ -595,3 +595,9 @@ Teste a URL do stream no Chrome do celular: http://192.168.4.1:81/stream.
 Se quiser, eu já te deixo aqui um eas.json + app.json exatos com as chaves atuais do seu projeto (copiar/colar). E, se aparecer algum erro de EAS (credenciais Android, Keystore, etc.), me manda a mensagem que eu ajusto o fluxo.
 
 
+
+
+
+✖ Generating keystore in the cloud...
+Request failed: 500 (Internal Server Error)
+    Error: build command failed.
