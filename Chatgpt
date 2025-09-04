@@ -740,3 +740,168 @@ Então instale o JDK 17 (Adoptium ou Oracle) se você ainda estiver com JDK 8 ou
 Quer que eu te mande o link direto para baixar e instalar o JDK 17 certo (sem risco de pegar versão errada)?
 
 
+
+
+
+
+
+
+
+Isso explica o erro. Esse java.exe em
+
+C:\Program Files (x86)\Common Files\Oracle\Java\java8path\java.exe
+
+é só um atalho do Java 8 (32-bit) — não é um JDK e não serve para o Gradle/AGP do Expo (SDK 51 exige JDK 17, 64-bit).
+
+
+Vamos arrumar do zero:
+
+
+Passo 1 — Instalar o JDK 17 (64-bit)
+
+
+Escolha um método:
+
+
+Com Winget (mais simples)
+
+
+No PowerShell (Admin):
+
+
+winget install EclipseAdoptium.Temurin.17.JDK
+
+
+
+Ou com Chocolatey
+
+
+choco install temurin17 -y
+
+
+
+Depois da instalação, o JDK fica normalmente em:
+
+
+C:\Program Files\Eclipse Adoptium\jdk-17.x.x_x-hotspot\
+
+
+
+Passo 2 — Configurar o JAVA_HOME e o Path
+
+
+No PowerShell (Admin), ajuste o caminho exatamente para a pasta sem \bin:
+
+
+# Descobrir a pasta instalada do JDK 17
+Get-ChildItem "C:\Program Files\Eclipse Adoptium\" -Directory | Where-Object { $_.Name -like "jdk-17*" } | Select-Object -Expand FullName
+
+# Substitua abaixo pelo caminho que aparecer, por ex.:
+$JDK17 = "C:\Program Files\Eclipse Adoptium\jdk-17.0.11.9-hotspot"
+
+# Definir JAVA_HOME (variável de sistema)
+[Environment]::SetEnvironmentVariable("JAVA_HOME", $JDK17, "Machine")
+
+# Acrescentar %JAVA_HOME%\bin ao Path de sistema (se ainda não estiver)
+$path = [Environment]::GetEnvironmentVariable("Path","Machine")
+if(-not ($path -split ";" | Where-Object { $_ -like "*%JAVA_HOME%\bin*" })) {
+  [Environment]::SetEnvironmentVariable("Path", "$path;%JAVA_HOME%\bin", "Machine")
+}
+
+Write-Host "JAVA_HOME e PATH configurados. Reinicie o terminal/VS Code."
+
+
+
+Remover o “java8path” do Oracle do PATH
+
+
+Para evitar que o Windows pegue o Java 8 primeiro, remova a entrada antiga do “java8path” via GUI:
+
+
+
+
+Iniciar → “Editar variáveis de ambiente do sistema”
+
+
+Variáveis de Ambiente…
+
+
+Em Variáveis do sistema, edite Path e remova qualquer item que contenha java8path.
+
+
+Confira que %JAVA_HOME%\bin está presente.
+
+
+Dê OK em tudo e feche/reabra o terminal.
+
+
+
+
+Passo 3 — Validar a instalação
+
+
+Abra um novo PowerShell:
+
+
+echo $env:JAVA_HOME
+java -version
+
+
+
+Saída esperada (algo como):
+
+
+C:\Program Files\Eclipse Adoptium\jdk-17.0.11.9-hotspot
+java version "17.0.11" ...
+
+
+
+Passo 4 — Gerar o APK localmente (sem fila)
+
+
+No projeto Expo:
+
+
+# 1) Gerar nativo
+npx expo prebuild
+
+# 2) Build release Android
+cd android
+.\gradlew assembleRelease
+
+
+
+APK gerado em:
+
+
+android\app\build\outputs\apk\release\app-release.apk
+
+
+
+Instale no celular (USB/ADB):
+
+
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+
+
+
+
+
+Com esse APK “release”, você roda offline (ideal pro AP do ESP32-CAM).
+
+Lembre que, no app.json, já deve estar "usesCleartextTraffic": true para permitir http://192.168.4.1.
+
+
+
+
+
+Se quiser, me mande o resultado do:
+
+
+java -version
+echo $env:JAVA_HOME
+
+
+
+que eu confirmo se está 100% antes de rodar o Gradle.
+
