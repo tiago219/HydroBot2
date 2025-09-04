@@ -1,1 +1,11 @@
 https://chatgpt.com/share/68b9cddf-7bb8-800d-83c2-cdaedd87c674
+
+PS K:\Users\20231350250\Documents\mibr2025\hydrobot-app> npm i @react-native-webview/webview
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/@react-native-webview%2fwebview - Not found
+npm error 404
+npm error 404  '@react-native-webview/webview@*' is not in this registry.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: K:\Users\20231350250\AppData\Local\npm-cache\_logs\2025-09-03T22_33_35_545Z-debug-0.log
