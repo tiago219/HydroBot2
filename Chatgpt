@@ -9,3 +9,267 @@ npm error 404
 npm error 404 Note that you can also install from a
 npm error 404 tarball, folder, http url, or git url.
 npm error A complete log of this run can be found in: K:\Users\20231350250\AppData\Local\npm-cache\_logs\2025-09-03T22_33_35_545Z-debug-0.log
+
+
+Perfeito 🙌
+
+Então aqui vai a árvore de arquivos final do seu projeto Expo (sem sensores, apenas câmera + LED + bomba + modos + joystick).
+
+
+
+📂 Estrutura esperada
+
+
+hydrobot-app/
+├─ app.json
+├─ package.json
+├─ App.tsx
+└─ src/
+   └─ config.js
+
+
+
+
+📄 Arquivos completos
+
+
+1. app.json
+
+
+{
+  "expo": {
+    "name": "HydroBot",
+    "slug": "hydrobot-app",
+    "scheme": "hydrobot",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "sdkVersion": "51.0.0",
+    "platforms": ["ios", "android"],
+    "userInterfaceStyle": "light"
+  }
+}
+
+
+
+
+2. package.json
+
+
+{
+  "name": "hydrobot-app",
+  "version": "1.0.0",
+  "main": "expo-router/entry",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "expo": "^51.0.0",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-native": "0.74.0",
+    "react-native-webview": "^13.8.6"
+  }
+}
+
+
+
+
+3. src/config.js
+
+
+// IP do ESP32-CAM em modo Access Point
+export const BASE_URL = "http://192.168.4.1";
+
+
+
+
+4. App.tsx
+
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { SafeAreaView, View, Text, TouchableOpacity, StyleSheet, ScrollView, TextInput, Alert, PanResponder } from "react-native";
+import { WebView } from "react-native-webview";
+import { BASE_URL } from "./src/config";
+
+export default function App() {
+  const [mode, setMode] = useState("manual");
+  const [led, setLed] = useState(false);
+  const [pump, setPump] = useState(false);
+  const [duty, setDuty] = useState("0");
+
+  const getJson = async (path: string) => (await fetch(`${BASE_URL}${path}`)).json();
+
+  const refresh = async () => {
+    try {
+      const st = await getJson("/status");
+      setMode(st.mode);
+      setLed(!!st.led);
+      setPump(!!st.pump);
+    } catch {}
+  };
+
+  useEffect(() => {
+    const id = setInterval(refresh, 1000);
+    refresh();
+    return () => clearInterval(id);
+  }, []);
+
+  const toggleLed = async () => {
+    const on = !led;
+    const r = await getJson(`/led?on=${on ? 1 : 0}`);
+    setLed(!!r.led);
+  };
+
+  const togglePump = async () => {
+    const on = !pump;
+    const r = await getJson(`/pump?on=${on ? 1 : 0}`);
+    setPump(!!r.pump);
+  };
+
+  const applyDuty = async () => {
+    const val = Math.max(0, Math.min(255, parseInt(duty || "0", 10)));
+    const r = await getJson(`/pump_pwm?duty=${val}`);
+    if (r?.ok) {
+      Alert.alert("PWM aplicado", `Duty = ${val}`);
+      setPump(val > 0);
+    } else {
+      Alert.alert("Erro", "Duty deve ser 0..255");
+    }
+  };
+
+  const setModeRemote = async (m: string) => {
+    const r = await getJson(`/mode?v=${m}`);
+    if (r?.ok) setMode(m);
+  };
+
+  // ===== JOYSTICK =====
+  const [joy, setJoy] = useState({ x: 0, y: 0 });
+  const center = useRef({ x: 0, y: 0 });
+  const pan = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderGrant: (_, g) => {
+          center.current = { x: g.x0, y: g.y0 };
+        },
+        onPanResponderMove: (_, g) => {
+          const dx = g.moveX - center.current.x;
+          const dy = g.moveY - center.current.y;
+          const nx = Math.max(-1, Math.min(1, dx / 80));
+          const ny = Math.max(-1, Math.min(1, -dy / 80));
+          setJoy({ x: nx, y: ny });
+        },
+        onPanResponderRelease: async () => {
+          setJoy({ x: 0, y: 0 });
+          await getJson(`/joystick?x=0&y=0`);
+        }
+      }),
+    []
+  );
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      fetch(`${BASE_URL}/joystick?x=${joy.x.toFixed(2)}&y=${joy.y.toFixed(2)}`).catch(() => {});
+    }, 60);
+    return () => clearTimeout(id);
+  }, [joy]);
+
+  const streamHtml = `
+    <html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;">
+      <img src="${BASE_URL}:81/stream" style="width:100%;height:100%;object-fit:contain;" />
+    </body></html>
+  `;
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>HydroBot Controller</Text>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Câmera</Text>
+          <View style={{ height: 220, borderRadius: 8, overflow: "hidden", backgroundColor: "#000" }}>
+            <WebView originWhitelist={["*"]} source={{ html: streamHtml }} />
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <View style={[styles.card, { flex: 1, marginRight: 6 }]}>
+            <Text style={styles.cardTitle}>LED</Text>
+            <TouchableOpacity style={[styles.btn, led ? styles.btnOn : styles.btnOff]} onPress={toggleLed}>
+              <Text style={styles.btnText}>{led ? "Desligar" : "Ligar"} LED</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={[styles.card, { flex: 1, marginLeft: 6 }]}>
+            <Text style={styles.cardTitle}>Bomba (On/Off)</Text>
+            <TouchableOpacity style={[styles.btn, pump ? styles.btnDanger : styles.btnOn]} onPress={togglePump}>
+              <Text style={styles.btnText}>{pump ? "Desligar" : "Ligar"} Bomba</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Bomba (PWM)</Text>
+          <View style={styles.row}>
+            <TextInput style={styles.input} value={duty} onChangeText={setDuty} keyboardType="numeric" placeholder="0..255" />
+            <TouchableOpacity style={[styles.btn, styles.btnOn]} onPress={applyDuty}>
+              <Text style={styles.btnText}>Aplicar Duty</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Modo</Text>
+          <View style={styles.row}>
+            {["manual", "auto", "patrol"].map((m) => (
+              <TouchableOpacity key={m} style={[styles.chip, mode === m && styles.chipActive]} onPress={() => setModeRemote(m)}>
+                <Text style={[styles.chipText, mode === m && styles.chipTextActive]}>{m}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Joystick</Text>
+          <View style={styles.joyArea} {...pan.panHandlers}>
+            <View style={[styles.joyDot, { transform: [{ translateX: joy.x * 80 }, { translateY: -joy.y * 80 }] }]} />
+          </View>
+          <Text style={styles.mono}>x={joy.x.toFixed(2)}  y={joy.y.toFixed(2)}</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: "#0b1220" },
+  container: { padding: 16 },
+  title: { color: "#fff", fontSize: 22, fontWeight: "700", marginBottom: 12 },
+  card: { backgroundColor: "#121a2b", padding: 12, borderRadius: 12, marginBottom: 12, borderWidth: 1, borderColor: "#1e2a44" },
+  cardTitle: { color: "#bcd", fontSize: 16, fontWeight: "700", marginBottom: 8 },
+  btn: { paddingVertical: 10, paddingHorizontal: 14, borderRadius: 10, alignItems: "center" },
+  btnText: { color: "#fff", fontWeight: "700" },
+  btnOn: { backgroundColor: "#2d9f5b" },
+  btnOff: { backgroundColor: "#2c5aa0" },
+  btnDanger: { backgroundColor: "#c23d3d" },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  input: { flex: 1, backgroundColor: "#0b1220", color: "#fff", borderWidth: 1, borderColor: "#28406b", borderRadius: 10, paddingHorizontal: 12, marginRight: 8, height: 44 },
+  chip: { paddingVertical: 8, paddingHorizontal: 12, borderRadius: 999, backgroundColor: "#0b1220", borderWidth: 1, borderColor: "#2a3e60", marginRight: 8 },
+  chipActive: { backgroundColor: "#2a3e60" },
+  chipText: { color: "#9fb3d2", fontWeight: "700" },
+  chipTextActive: { color: "#fff" },
+  joyArea: { height: 180, backgroundColor: "#091427", borderRadius: 12, borderWidth: 1, borderColor: "#1e2a44", alignItems: "center", justifyContent: "center" },
+  joyDot: { width: 40, height: 40, borderRadius: 999, backgroundColor: "#5aa9ff" },
+  mono: { color: "#9fb3d2", fontFamily: "monospace", marginTop: 6 }
+});
+
+
+
+
+👉 Agora sua pasta está 100% clara.
+
+Quer que eu te gere também os comandos passo-a-passo desde npx create-expo-app até rodar o app no celular?
+
