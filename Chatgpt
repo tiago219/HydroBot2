@@ -2132,3 +2132,32 @@ npx expo install react-native-webview expo-image
 
 👉 Quer que eu adicione também os botões para ligar/desligar LED e bomba no index.tsx, direto chamando /led e /pump?
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PS K:\Users\20231350250\Documents\mibr2025\hydrobot-app> npx expo start
+Starting project at K:\Users\20231350250\Documents\mibr2025\hydrobot-app
+PluginError: Failed to resolve plugin for module "expo-dev-client" relative to "K:\Users\20231350250\Documents\mibr2025\hydrobot-app"
+PluginError: Failed to resolve plugin for module "expo-dev-client" relative to "K:\Users\20231350250\Documents\mibr2025\hydrobot-app"
+    at resolvePluginForModule (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config-plugins\build\utils\plugin-resolver.js:71:11)
+    at resolveConfigPluginFunctionWithInfo (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config-plugins\build\utils\plugin-resolver.js:150:7)
+    at resolveConfigPluginFunction (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config-plugins\build\utils\plugin-resolver.js:141:7)
+    at withStaticPlugin (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config-plugins\build\plugins\withStaticPlugin.js:85:70)
+    at K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config-plugins\build\plugins\withPlugins.js:30:84
+    at Array.reduce (<anonymous>)
+    at withPlugins (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config-plugins\build\plugins\withPlugins.js:30:18)
+    at withConfigPlugins (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\plugins\withConfigPlugins.js:35:47)
+    at fillAndReturnConfig (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\Config.js:229:78)
+    at getConfig (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\Config.js:286:10)
