@@ -910,3 +910,136 @@ que eu confirmo se está 100% antes de rodar o Gradle.
 
 
 K:\Users\20231350250\Documents\mibr2025\jdk-24.0.2
+
+
+
+
+Perfeito 👌 você já tem o JDK portátil em:
+
+
+K:\Users\20231350250\Documents\mibr2025\jdk-24.0.2
+
+
+
+Vamos preparar tudo certinho para o Gradle/Expo usar esse JDK (mesmo sem admin).
+
+
+
+⚡ Passo 1 — Setar variáveis de ambiente (sessão atual)
+
+
+Abra o PowerShell dentro do seu projeto e cole:
+
+
+# Ajustar para o caminho do seu JDK
+$env:JAVA_HOME = "K:\Users\20231350250\Documents\mibr2025\jdk-24.0.2"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+
+# Testar se pegou o JDK correto
+java -version
+
+
+
+👉 Deve aparecer algo como:
+
+
+openjdk version "24.0.2" ...
+
+
+
+
+⚡ Passo 2 — Configurar o Gradle para usar esse JDK sempre
+
+
+Edite o arquivo:
+
+
+android/gradle.properties
+
+
+
+e adicione no final (com duas barras invertidas):
+
+
+org.gradle.java.home=K:\\Users\\20231350250\\Documents\\mibr2025\\jdk-24.0.2
+
+
+
+Isso garante que o Gradle use seu JDK portátil, mesmo que o sistema tenha outro configurado.
+
+
+
+⚡ Passo 3 — Apontar Android SDK (se você já extraiu o ZIP do SDK)
+
+
+Supondo que você tenha extraído o SDK ZIP em:
+
+
+K:\Users\20231350250\Documents\mibr2025\android-sdk
+
+
+
+Adicione no mesmo PowerShell:
+
+
+$env:ANDROID_SDK_ROOT = "K:\Users\20231350250\Documents\mibr2025\android-sdk"
+$env:Path = "$env:ANDROID_SDK_ROOT\platform-tools;$env:ANDROID_SDK_ROOT\cmdline-tools\latest\bin;$env:Path"
+
+
+
+Se ainda não tem o SDK, me fala que eu te passo os links/cmd para baixar o ZIP certo.
+
+
+
+⚡ Passo 4 — Aceitar licenças e instalar pacotes mínimos
+
+
+Com o SDK configurado:
+
+
+sdkmanager.bat --sdk_root="$env:ANDROID_SDK_ROOT" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+yes | sdkmanager.bat --sdk_root="$env:ANDROID_SDK_ROOT" --licenses
+
+
+
+
+⚡ Passo 5 — Gerar o APK Release
+
+
+No seu projeto Expo:
+
+
+# gerar nativo
+npx expo prebuild
+
+# ir para a pasta android
+cd android
+
+# compilar APK release com JDK portátil
+.\gradlew assembleRelease -Dorg.gradle.java.home="$env:JAVA_HOME" -Dorg.gradle.jvmargs="-Xmx3g"
+
+
+
+APK final estará em:
+
+
+android\app\build\outputs\apk\release\app-release.apk
+
+
+
+Instale no celular (via USB e ADB):
+
+
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+
+
+
+
+📌 Observação: O Expo SDK 51 foi testado oficialmente com Java 17.
+
+Você está com Java 24 — o Gradle deve aceitar, mas se der erro de compatibilidade (“unsupported class file major version”), a solução é baixar JDK 17 (zip) e apontar para ele no lugar do 24.
+
+
+
+👉 Quer que eu já te mande o link direto para o JDK 17 portátil (zip) para evitar qualquer risco de incompatibilidade?
+
