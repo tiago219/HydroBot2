@@ -1108,3 +1108,337 @@ A problem occurred evaluating project ':app'.
 > Get more help at https://help.gradle.org.
 
 BUILD FAILED in 20s
+
+
+
+
+
+
+
+
+
+Perfeito — abaixo vão duas opções completas para você colar direto nos arquivos e compilar sem o erro do path=''.
+
+
+
+✅ Opção A (rápida): assinar release com a debug key
+
+
+
+
+Funciona para instalar no celular (não para publicar). Não precisa de key.properties.
+
+
+
+
+Arquivo: android/app/build.gradle (completo)
+
+
+
+
+Substitua todo o conteúdo pelo abaixo.
+
+
+
+
+apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
+apply plugin: "org.jetbrains.kotlin.android"
+
+import com.android.build.OutputFile
+
+def projectRoot = rootProject.projectDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+
+/**
+ * Expo config plugin (se existir no seu projeto; se não existir, pode remover esta linha)
+ */
+apply from: new File(["node", "-e", "require('expo/bin/resolveFrom')"].execute(null, rootDir).text.trim(), "packages/@expo/config-plugins/scripts/autolink.gradle"), to: project
+
+def enableProguardInReleaseBuilds = false
+def enableSeparateBuildPerCPUArchitecture = false
+
+android {
+  namespace "com.yagohmz.hydrobot" // ajuste se quiser
+  compileSdkVersion rootProject.ext.get("compileSdkVersion")
+
+  defaultConfig {
+    applicationId "com.yagohmz.hydrobot" // ajuste se quiser
+    minSdkVersion rootProject.ext.get("minSdkVersion")
+    targetSdkVersion rootProject.ext.get("targetSdkVersion")
+    versionCode 1
+    versionName "1.0"
+    // Necessário para permissões Cleartext (Expo já injeta via AndroidManifest se app.json tiver usesCleartextTraffic)
+    manifestPlaceholders = [
+      expoDebuggable: false
+    ]
+  }
+
+  buildTypes {
+    debug {
+      signingConfig signingConfigs.debug
+    }
+    release {
+      // 🔑 Forçar usar a assinatura debug (evita erro path='')
+      signingConfig signingConfigs.debug
+
+      minifyEnabled enableProguardInReleaseBuilds
+      shrinkResources false
+      proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+    }
+  }
+
+  packagingOptions {
+    resources {
+      excludes += ["META-INF/**"]
+    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+dependencies {
+  implementation fileTree(dir: "libs", include: ["*.jar"])
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+/**
+ * React Native/Expo autolinking
+ */
+apply from: new File(["node", "-e", "require('expo/bin/resolveFrom')"].execute(null, rootDir).text.trim(), "packages/react-native-gradle-plugin/dist/react-native-gradle-plugin.js")
+
+
+
+Arquivo: android/gradle.properties (adicione/garanta estas linhas)
+
+
+
+
+Mantém o uso do seu JDK portátil.
+
+
+
+
+org.gradle.jvmargs=-Xmx3g -Dkotlin.daemon.jvm.options=-Xmx2g
+android.useAndroidX=true
+
+# Aponte para o JDK 17 portátil
+org.gradle.java.home=K:\\Users\\20231350250\\Documents\\mibr2025\\jdk-17.0.11
+
+
+
+
+
+Dica: se existir android/app/key.properties, apague esse arquivo nesta opção.
+
+
+
+
+
+✅ Opção B (correta para release): assinar com keystore própria
+
+
+Arquivo: android/app/build.gradle (completo)
+
+
+
+
+Substitua todo o conteúdo. Este lê o key.properties.
+
+
+
+
+apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
+apply plugin: "org.jetbrains.kotlin.android"
+
+import com.android.build.OutputFile
+
+def projectRoot = rootProject.projectDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+
+// Expo autolink (se existir; remova se não usa)
+apply from: new File(["node", "-e", "require('expo/bin/resolveFrom')"].execute(null, rootDir).text.trim(), "packages/@expo/config-plugins/scripts/autolink.gradle"), to: project
+
+def enableProguardInReleaseBuilds = false
+def enableSeparateBuildPerCPUArchitecture = false
+
+// 🔑 Carregar key.properties (assina release com sua chave)
+def keystorePropertiesFile = rootProject.file("app/key.properties")
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+  keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+  namespace "com.yagohmz.hydrobot" // ajuste se quiser
+  compileSdkVersion rootProject.ext.get("compileSdkVersion")
+
+  defaultConfig {
+    applicationId "com.yagohmz.hydrobot" // ajuste se quiser
+    minSdkVersion rootProject.ext.get("minSdkVersion")
+    targetSdkVersion rootProject.ext.get("targetSdkVersion")
+    versionCode 1
+    versionName "1.0"
+    manifestPlaceholders = [ expoDebuggable: false ]
+  }
+
+  signingConfigs {
+    debug {
+      // default debug
+    }
+    release {
+      if (keystoreProperties.containsKey('storeFile') && keystoreProperties['storeFile']) {
+        storeFile file(keystoreProperties['storeFile'])
+        storePassword keystoreProperties['storePassword']
+        keyAlias keystoreProperties['keyAlias']
+        keyPassword keystoreProperties['keyPassword']
+      } else {
+        // fallback: evita path='' se key.properties faltar
+        signingConfig signingConfigs.debug
+      }
+    }
+  }
+
+  buildTypes {
+    debug {
+      signingConfig signingConfigs.debug
+    }
+    release {
+      signingConfig signingConfigs.release
+      minifyEnabled enableProguardInReleaseBuilds
+      shrinkResources false
+      proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+    }
+  }
+
+  packagingOptions {
+    resources { excludes += ["META-INF/**"] }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_17
+    targetCompatibility JavaVersion.VERSION_17
+  }
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+
+dependencies {
+  implementation fileTree(dir: "libs", include: ["*.jar"])
+  implementation "com.facebook.react:react-android"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+}
+
+// React Native/Expo autolinking
+apply from: new File(["node", "-e", "require('expo/bin/resolveFrom')"].execute(null, rootDir).text.trim(), "packages/react-native-gradle-plugin/dist/react-native-gradle-plugin.js")
+
+
+
+Arquivo: android/app/key.properties (novo — preencha senhas reais)
+
+
+
+
+Se usar caminho absoluto, lembre as barras duplas.
+
+
+
+
+storeFile=upload-keystore.jks
+storePassword=SUA_SENHA_AQUI
+keyAlias=upload
+keyPassword=SUA_SENHA_AQUI
+
+
+
+
+
+Se o .jks estiver fora da pasta app, use absoluto:
+
+
+storeFile=K:\\Users\\20231350250\\Documents\\mibr2025\\hydrobot-app\\android\\app\\upload-keystore.jks
+
+
+
+
+
+(Se precisar) gerar o keystore:
+
+
+No PowerShell dentro de android/app:
+
+
+"K:\Users\20231350250\Documents\mibr2025\jdk-17.0.11\bin\keytool.exe" -genkeypair -v -storetype JKS -keystore upload-keystore.jks `
+  -alias upload -keyalg RSA -keysize 2048 -validity 10000
+
+
+
+Arquivo: android/gradle.properties
+
+
+
+
+Igual à opção A.
+
+
+
+
+org.gradle.jvmargs=-Xmx3g -Dkotlin.daemon.jvm.options=-Xmx2g
+android.useAndroidX=true
+org.gradle.java.home=K:\\Users\\20231350250\\Documents\\mibr2025\\jdk-17.0.11
+
+
+
+
+🔧 Comandos (Windows/PowerShell)
+
+
+Antes de build (uma vez por sessão):
+
+
+$env:JAVA_HOME = "K:\Users\20231350250\Documents\mibr2025\jdk-17.0.11"
+$env:Path = "$env:JAVA_HOME\bin;$env:Path"
+java -version
+
+
+
+Build:
+
+
+# na raiz do projeto
+npx expo prebuild
+
+# entrar na pasta android
+cd android
+
+# limpar e compilar
+.\gradlew clean
+.\gradlew assembleRelease -Dorg.gradle.java.home="$env:JAVA_HOME" -Dorg.gradle.jvmargs="-Xmx3g"
+
+
+
+APK final:
+
+
+android\app\build\outputs\apk\release\app-release.apk
+
+
+
+Instalar no Android:
+
+
+adb install -r android\app\build\outputs\apk\release\app-release.apk
+
+
+
+
+Se preferir, me diga qual opção vai usar (A ou B) e eu ajusto o applicationId/namespace para o valor que você quiser (ex.: com.seu.nome.hydrobot).
+
+
