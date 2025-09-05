@@ -2639,3 +2639,59 @@ O stream deve aparecer imediatamente (WebView com <img> do MJPEG).
 
 Se preferir, no próximo passo adiciono os botões LED on/off, Pump on/off e PWM chamando as rotas /led, /pump e /pump_pwm. Quer que eu já coloque esses controles?
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{
+  "expo": {
+    "name": "HydroBotApp2",
+    "slug": "HydroBotApp2",
+    "scheme": "hydrobotapp2",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0b1220"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
+    },
+    "android": {
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0b1220"
+      }
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}
