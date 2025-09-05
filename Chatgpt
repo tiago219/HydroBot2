@@ -2161,3 +2161,13 @@ PluginError: Failed to resolve plugin for module "expo-dev-client" relative to "
     at withConfigPlugins (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\plugins\withConfigPlugins.js:35:47)
     at fillAndReturnConfig (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\Config.js:229:78)
     at getConfig (K:\Users\20231350250\Documents\mibr2025\hydrobot-app\node_modules\@expo\config\build\Config.js:286:10)
+
+
+
+
+
+
+
+
+
+https://chatgpt.com/share/68baf576-06fc-800d-ad14-42ccf76971a6
