@@ -2171,3 +2171,172 @@ PluginError: Failed to resolve plugin for module "expo-dev-client" relative to "
 
 
 https://chatgpt.com/share/68baf576-06fc-800d-ad14-42ccf76971a6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perfeito 👌 agora vamos preparar a base de navegação. O Expo trabalha bem com react-navigation. Vou te deixar um exemplo bem simples com duas telas:
+
+
+
+
+Home (index) → tem um botão.
+
+
+CameraScreen → só mostra o texto "Câmera".
+
+
+
+
+
+1) Instalar dependências de navegação
+
+
+No terminal, dentro do projeto:
+
+
+npm install @react-navigation/native
+npm install react-native-screens react-native-safe-area-context react-native-gesture-handler react-native-reanimated react-native-get-random-values
+npm install @react-navigation/native-stack
+
+
+
+⚠️ Depois, abra babel.config.js e adicione o plugin react-native-reanimated no final:
+
+
+module.exports = function(api) {
+  api.cache(true);
+  return {
+    presets: ['babel-preset-expo'],
+    plugins: ['react-native-reanimated/plugin'],
+  };
+};
+
+
+
+
+2) Criar estrutura de pastas
+
+
+Sugiro organizar assim:
+
+
+HydroBotApp2/
+  App.tsx
+  src/
+    screens/
+      HomeScreen.tsx
+      CameraScreen.tsx
+
+
+
+
+3) Código do App.tsx
+
+
+Aqui a gente inicializa a navegação:
+
+
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import HomeScreen from "./src/screens/HomeScreen";
+import CameraScreen from "./src/screens/CameraScreen";
+
+export type RootStackParamList = {
+  Home: undefined;
+  Camera: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export default function App() {
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Home">
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Camera" component={CameraScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+
+
+
+4) Código de src/screens/HomeScreen.tsx
+
+
+import { View, Text, Button, StyleSheet } from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../App";
+
+type Props = NativeStackScreenProps<RootStackParamList, "Home">;
+
+export default function HomeScreen({ navigation }: Props) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>HydroBotApp2</Text>
+      <Button title="Ir para Câmera" onPress={() => navigation.navigate("Camera")} />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#0b1220" },
+  title: { color: "white", fontSize: 22, marginBottom: 20 },
+});
+
+
+
+
+5) Código de src/screens/CameraScreen.tsx
+
+
+import { View, Text, StyleSheet } from "react-native";
+
+export default function CameraScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Tela: Câmera</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#111a33" },
+  title: { color: "#9fb3ff", fontSize: 20 },
+});
+
+
+
+
+👉 Assim, quando abrir o app, você verá a tela inicial com o botão “Ir para Câmera”.
+
+Ao clicar, ele navega para a tela “Câmera” (que no futuro a gente vai implementar).
+
+
+
+Quer que eu já prepare a estrutura para várias telas futuras (ex.: Dashboard, Settings, etc.), ou prefere manter só Home + Câmera por enquanto?
+
