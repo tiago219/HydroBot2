@@ -2695,3 +2695,114 @@ Se preferir, no próximo passo adiciono os botões LED on/off, Pump on/off e PWM
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bora 🚀 — vamos versionar seu projeto HydroBotApp2 no GitHub. Vou te passar passo a passo, simples:
+
+
+
+1) Inicializar o Git
+
+
+No terminal dentro da pasta HydroBotApp2:
+
+
+git init
+git add .
+git commit -m "HydroBotApp2: projeto inicial Expo + tela Câmera"
+
+
+
+
+2) Criar repositório no GitHub
+
+
+
+
+Vá até github.com/new.
+
+
+Nome do repositório: HydroBotApp2
+
+
+Escolha público ou privado.
+
+
+Clique em Create repository.
+
+
+
+
+
+
+O GitHub vai mostrar a URL do repositório (exemplo: https://github.com/seu-usuario/HydroBotApp2.git).
+
+
+
+
+
+3) Conectar seu projeto ao GitHub
+
+
+Ainda no terminal do projeto:
+
+
+git branch -M main
+git remote add origin https://github.com/SEU-USUARIO/HydroBotApp2.git
+git push -u origin main
+
+
+
+
+4) Configurar .gitignore
+
+
+O Expo já cria um .gitignore, mas confira se ele tem pelo menos:
+
+
+node_modules
+.expo
+.expo-shared
+dist
+web-build
+
+
+
+Assim você não envia lixo pro GitHub.
+
+
+
+5) Testar
+
+
+No GitHub, atualize a página do repositório e deve aparecer seu código (App.tsx, src/screens etc).
+
+
+
+⚠️ Pergunto:
+
+quer que eu prepare o README.md inicial (com instruções de instalação e rodar o app) pra já subir junto?
+
+
